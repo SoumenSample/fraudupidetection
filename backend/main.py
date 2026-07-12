@@ -5,6 +5,10 @@ from app.database.config import init_db
 from app.routes import auth, transactions, admin
 from app.ml.fraud_model import train_model
 import os
+from dotenv import load_dotenv
+import json
+
+load_dotenv()
 
 
 @asynccontextmanager
@@ -30,9 +34,10 @@ app = FastAPI(
 )
 
 # CORS
+cors_origins = json.loads(os.getenv("CORS_ORIGINS", '["http://localhost:5173"]'))
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:3000", "http://localhost:5174"],
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -56,4 +61,6 @@ async def health():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    host = os.getenv("BACKEND_HOST", "0.0.0.0")
+    port = int(os.getenv("BACKEND_PORT", "8000"))
+    uvicorn.run("main:app", host=host, port=port, reload=True)
